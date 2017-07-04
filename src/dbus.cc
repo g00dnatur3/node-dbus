@@ -37,38 +37,10 @@ namespace NodeDBus {
 
 		Local<Value> err = Nan::Null();
 		if (dbus_error_is_set(&error)) {
-			if (error.message != NULL) {
-				Local<Value> createErrorParameters[] = {
-					Nan::New(error.name).ToLocalChecked(),
-					Nan::New(error.message).ToLocalChecked()
-				};
-				err = data->createError->Call(2, createErrorParameters);
-			}
-			else {
-				Local<Value> createErrorParameters[] = {
-					Nan::New(error.name).ToLocalChecked(),
-					Nan::Undefined()
-				};
-				err = data->createError->Call(2, createErrorParameters);
-			}
+			err = Nan::Error(error.message);
 			dbus_error_free(&error);
 		} else if (dbus_message_get_type(reply_message) == DBUS_MESSAGE_TYPE_ERROR) {
-			dbus_set_error_from_message(&error, reply_message);
-			if (error.message != NULL) {
-				Local<Value> createErrorParameters[] = {
-					Nan::New(error.name).ToLocalChecked(),
-					Nan::New(error.message).ToLocalChecked()
-				};
-				err = data->createError->Call(2, createErrorParameters);
-			}
-			else {
-				Local<Value> createErrorParameters[] = {
-					Nan::New(error.name).ToLocalChecked(),
-					Nan::Undefined()
-				};
-				err = data->createError->Call(2, createErrorParameters);
-			}
-			dbus_error_free(&error);
+			err = Nan::Error(dbus_message_get_error_name(reply_message));
 		}
 
 		// Decode message for arguments
@@ -157,9 +129,6 @@ namespace NodeDBus {
 		if (!info[8]->IsFunction())
 			return Nan::ThrowError("Require callback function");
 
-		if (!info[9]->IsFunction())
-			return Nan::ThrowError("Require createError function");
-
 		int timeout = -1;
 		if (info[6]->IsInt32())
 			timeout = info[6]->Int32Value();
@@ -195,6 +164,7 @@ namespace NodeDBus {
 
 		// Preparing method arguments
 		if (info[7]->IsObject()) {
+
 			DBusMessageIter iter;
 			DBusSignatureIter siter;
 
@@ -250,7 +220,6 @@ namespace NodeDBus {
 			DBusAsyncData *data = new DBusAsyncData;
 			data->pending = pending;
 			data->callback = new Nan::Callback(info[8].As<Function>());
-			data->createError = new Nan::Callback(info[9].As<Function>());
 			if (!dbus_pending_call_set_notify(pending, method_callback, data, method_free)) {
 				if (message != NULL)
 					dbus_message_unref(message);
@@ -346,7 +315,6 @@ namespace NodeDBus {
 		Nan::SetMethod(exports, "callMethod", CallMethod);
 		Nan::SetMethod(exports, "requestName", RequestName);
 		Nan::SetMethod(exports, "registerObjectPath", ObjectHandler::RegisterObjectPath);
-		Nan::SetMethod(exports, "unregisterObjectPath", ObjectHandler::UnregisterObjectPath);
 		Nan::SetMethod(exports, "sendMessageReply", ObjectHandler::SendMessageReply);
 		Nan::SetMethod(exports, "sendErrorMessageReply", ObjectHandler::SendErrorMessageReply);
 		Nan::SetMethod(exports, "setObjectHandler", ObjectHandler::SetObjectHandler);

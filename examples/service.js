@@ -1,7 +1,9 @@
 var DBus = require('../');
 
+var dbus = new DBus();
+
 // Create a new service, object and interface
-var service = DBus.registerService('session', 'nodejs.dbus.ExampleService');
+var service = dbus.registerService('session', 'nodejs.dbus.ExampleService');
 var obj = service.createObject('/nodejs/dbus/ExampleService');
 
 // Create interface
@@ -15,20 +17,20 @@ iface1.addMethod('Dummy', {}, function(callback) {
 });
 
 iface1.addMethod('MakeError', { out: DBus.Define(String) }, function(callback) {
-	callback(new DBus.Error('nodejs.dbus.ExampleService.ErrorTest', 'Some error'));
+	callback(new Error('nodejs.dbus.ExampleService.ErrorTest'));
 });
 
 iface1.addMethod('Hello', { out: DBus.Define(String) }, function(callback) {
-	callback(null, 'Hello There!');
+	callback('Hello There!');
 });
 
 iface1.addMethod('SendObject', { in: [ DBus.Define(Object) ], out: DBus.Define(Object) }, function(obj, callback) {
-	callback(null, obj);
+	callback(obj);
 });
 
 iface1.addMethod('SendVarient', { in: [ DBus.Define('Auto') ], out: DBus.Define('Auto') }, function(obj, callback) {
 	console.log(obj);
-	callback(null, obj);
+	callback(obj);
 });
 
 iface1.addMethod('Ping', { out: DBus.Define(String) }, function(callback) {
@@ -44,14 +46,14 @@ iface1.addMethod('Equal', {
 }, function(a, b, callback) {
 
 	if (a == b)
-		callback(null, true);
+		callback(true);
 	else
-		callback(null, false);
+		callback(false);
 
 });
 
 iface1.addMethod('GetNameList', { out: DBus.Define(Array, 'list') }, function(callback) {
-	callback(null, [
+	callback([
 		'Fred',
 		'Stacy',
 		'Charles',
@@ -62,7 +64,7 @@ iface1.addMethod('GetNameList', { out: DBus.Define(Array, 'list') }, function(ca
 });
 
 iface1.addMethod('GetContacts', { out: DBus.Define(Object, 'contacts') }, function(callback) {
-	callback(null, {
+	callback({
 		Fred: {
 			email: 'fred@mandice.com',
 			url: 'http://fred-zone.blogspot.com/',
@@ -108,7 +110,7 @@ var author = 'Fred Chien';
 iface1.addProperty('Author', {
 	type: DBus.Define(String),
 	getter: function(callback) {
-		callback(null, author);
+		callback(author);
 	},
 	setter: function(value, complete) {
 		author = value;
@@ -122,7 +124,7 @@ var url = 'http://stem.mandice.org';
 iface1.addProperty('URL', {
 	type: DBus.Define(String),
 	getter: function(callback) {
-		callback(null, url);
+		callback(url);
 	}
 });
 
@@ -131,7 +133,7 @@ var jsOS = 'Stem OS';
 iface1.addProperty('JavaScriptOS', {
 	type: DBus.Define(String),
 	getter: function(callback) {
-		callback(null, jsOS);
+		callback(jsOS);
 	}
 });
 
@@ -155,7 +157,7 @@ setInterval(function() {
 var iface2 = obj.createInterface('nodejs.dbus.ExampleService.Interface2');
 
 iface2.addMethod('Hello', { out: DBus.Define(String) }, function(callback) {
-	callback(null, 'Hello There!');
+	callback('Hello There!');
 });
 
 iface2.update();

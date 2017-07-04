@@ -50,8 +50,9 @@ namespace ObjectHandler {
 		};
 
 		// Keep message live for reply
-		if (!dbus_message_get_no_reply(message))
+		if (!dbus_message_get_no_reply(message)) {
 			dbus_message_ref(message);
+		}
 
 		// Invoke
 		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(handler), 7, info);
@@ -75,6 +76,7 @@ namespace ObjectHandler {
 
 	static void _SendMessageReply(DBusConnection *connection, DBusMessage *message, Local<Value> reply_value, char *signature)
 	{
+
 		Nan::HandleScope scope;
 		DBusMessageIter iter;
 		DBusMessage *reply;
@@ -83,6 +85,7 @@ namespace ObjectHandler {
 		reply = dbus_message_new_method_return(message);
 
 		dbus_message_iter_init_append(reply, &iter);
+
 		if (!Encoder::EncodeObject(reply_value, &iter, signature)) {
 			printf("Failed to encode reply value\n");
 		}
@@ -109,34 +112,13 @@ namespace ObjectHandler {
 
 		// Register object path
 		char *object_path = strdup(*Nan::Utf8String(info[1]));
+
+		printf("!! ---- RegisterObjectPath -> %s \n", object_path);
+
 		dbus_bool_t ret = dbus_connection_register_object_path(bus->connection,
 			object_path,
 			&vtable,
 			NULL);
-		dbus_connection_flush(bus->connection);
-		dbus_free(object_path);
-		if (!ret) {
-			return Nan::ThrowError("Out of Memory");
-		}
-
-		return;
-	}
-
-	NAN_METHOD(UnregisterObjectPath) {
-		if (!info[0]->IsObject()) {
-			return Nan::ThrowTypeError("First parameter must be an object (bus)");
-		}
-
-		if (!info[1]->IsString()) {
-			return Nan::ThrowTypeError("Second parameter must be a string (object path)");
-		}
-
-		NodeDBus::BusObject *bus = static_cast<NodeDBus::BusObject *>(Nan::GetInternalFieldPointer(info[0]->ToObject(), 0));
-
-		// Register object path
-		char *object_path = strdup(*Nan::Utf8String(info[1]));
-		dbus_bool_t ret = dbus_connection_unregister_object_path(bus->connection,
-			object_path);
 		dbus_connection_flush(bus->connection);
 		dbus_free(object_path);
 		if (!ret) {

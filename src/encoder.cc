@@ -153,8 +153,10 @@ typedef bool (*CheckTypeCallback) (Local<Value>& value, const char* sig);
 
 	bool EncodeObject(Local<Value> value, DBusMessageIter *iter, const char *signature)
 	{
-		// printf("EncodeObject %s\n",signature);
-		// printf("%p", value);
+		//printf("EncodeObject %s\n",signature);
+		//printf("%p", value);
+		//printf("\n\n");
+
 		Nan::HandleScope scope;
 		DBusSignatureIter siter;
 		int type;
@@ -185,6 +187,9 @@ typedef bool (*CheckTypeCallback) (Local<Value>& value, const char* sig);
 		case DBUS_TYPE_INT16:
 		{
 			dbus_int16_t data = value->IntegerValue();
+			
+			//TODO convert to int16
+			
 			// printf("value: %lu\n",data);
 
 			if (!dbus_message_iter_append_basic(iter, type, &data)) {
@@ -212,6 +217,8 @@ typedef bool (*CheckTypeCallback) (Local<Value>& value, const char* sig);
 		{
 			dbus_uint16_t data = value->IntegerValue();
 			// printf("value: %lu\n",data);
+			
+			//TODO convert to uint16
 
 			if (!dbus_message_iter_append_basic(iter, type, &data)) {
 				printf("Failed to encode numeric value\n");
@@ -315,6 +322,8 @@ typedef bool (*CheckTypeCallback) (Local<Value>& value, const char* sig);
 				return false;
 			}
 
+			//printf("Got here type is  -> DBUS_TYPE_ARRAY\n\n");
+
 			DBusMessageIter subIter;
 			DBusSignatureIter arraySiter;
 			char *array_sig = NULL;
@@ -409,6 +418,8 @@ typedef bool (*CheckTypeCallback) (Local<Value>& value, const char* sig);
 
 		case DBUS_TYPE_VARIANT:
 		{
+			//printf("Got here type is  -> DBUS_TYPE_VARIANT\n\n");
+
 			DBusMessageIter subIter;
 
 			string str_sig = GetSignatureFromV8Type(value);
@@ -430,6 +441,9 @@ typedef bool (*CheckTypeCallback) (Local<Value>& value, const char* sig);
 		}
 		case DBUS_TYPE_STRUCT:
 		{
+
+			//printf("Got here type is  -> DBUS_TYPE_STRUCT\n\n");
+
 			// printf("struct\n");
 			DBusMessageIter subIter;
 			DBusSignatureIter structSiter;
